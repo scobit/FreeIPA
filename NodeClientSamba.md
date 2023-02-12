@@ -30,7 +30,9 @@ kinit работает не с доменом, а с REALM, т.е. если вв
 
 hostname клиента желательно должен быть в формате FQDN.
 
-### FreeIPA node
+Все сервисы, которые поддерживают Pam, теоретически могут работать с FreeIPA.
+
+## FreeIPA Server node
 
 #### Обновляем пакеты
 ```
@@ -106,7 +108,23 @@ kinit admin
 klist
 ```
 
-### Настройки на сервере Samba
+#### Установка компонентов для связи с другими доменами
+```
+yum -y install ipa-server-trust-ad
+```
+
+#### Добавление компонента Trust во FreeIPA server
+```
+ipa-adtrust-install --add-sids
+```
+
+#### Добавляем сервис типа cifs с hostname, где расположен Samba server
+```
+ipa service-add cifs/hostname.doamin.local
+```
+
+
+## Настройки на сервере Samba
 
 #### Обновление пакетов
 ```
@@ -151,37 +169,33 @@ yum -y install freeipa-client
 ```
 
 #### Запуск мастера настройки, для создания домашнего каталога при логине пользователя используется аргумент --mkhomedir
+```
 ipa-client-install --mkhomedir
+```
 
-
-
-
+#### Добавление пользователя через консоль (предварительно нужно провести kinit). 
+#### где first - имя, last - фамилия, password аргумент, который запросит пароль для пользователя. По умолчанию пароль на задаётся.
+```
 ipa user-add Name --first=FirstName --last=LastName --password
+```
 
+#### Установка ПО для Samba
+```
+yum -y install ipa-client sssd-libwbclient samba samba-client
+```
 
+#### Бэкап текущей конфигурации Samba
+```
+cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
+```
 
-он уважать себя заставил и лучше выдумать не мог
-
-По умолчанию новый пользователь должен сменить себе пароль
-
-yum install ipa-client sssd-libwbclient samba samba-client
-
-# on freeipa install 
-yum install ipa-server-trust-ad
-
-ipa service-add cifs/hostname.doamin.local (host where we have samba)
-
-ipa-adtrust-install --add-sids
-
-# on samba server
-
-cp /etc/samba/smb.conf /etc/samba/smb.conf.original
-
+#### Редактируем конфиг Samba
+```
 vim /etc/samba/smb.conf
 
 [global]
-	workgroup = MKM
-	realm = MKM.LOCAL
+	workgroup = QWE
+	realm = QWE.LOCAL
 	dedicated keytab file = FILE:/etc/samba/samba.keytab
 	kerberos method = dedicated keytab
 	log file = /var/log/samba/log.%m
@@ -209,22 +223,29 @@ vim /etc/samba/smb.conf
 	writable = yes
 	browsable = yes
 	
+```
 
+#### Создаём каталог для share и настраиваем права
+```
 mkdir /share
 
 chmod -R 777 /share
+```
 
-ipa-getkeytab -s freeipa.mkm.local -p cifs/samba.mkm.local -k /etc/samba/samba.keytab
+#### Запрашиваем keytab с сервера FreeIPA
+```
+ipa-getkeytab -s c2.qwe.local -p cifs/c3.qwe.local -k /etc/samba/samba.keytab
+```
 
+#### Перезагружаем сервисы Samba
+```
 systemctl restart smb
 
 systemctl restart nmb
+```
 
-restart netbios service ?
 
-все сервисы, которые поддерживают Pam, тоже могут работать с freeipa
-
-# on sambba client
+## Действия на Samba client
 yum -y install ipa-client sssd-libwbclient samba-client
 
 vim /etc/krb5.conf
@@ -239,5 +260,5 @@ kinit UserName
 
 smbclient -k //samba.mkm.local/share
 
-link freeipa howto integrating samba with ipa
+
 
