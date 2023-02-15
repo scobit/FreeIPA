@@ -6,6 +6,34 @@ https://manpages.debian.org/unstable/freeipa-server/ipa-server-install.1.en.html
 https://www.freeipa.org/page/V3/CA-less_install
 
 
+#### Шаблон запуска
+```
+ipa-server-install \
+--setup-dns \
+--no-ntp \ 
+--forwarder=192.168.0.1 \
+--auto-reverse \
+--reverse-zone=0.168.192.in-addr.arpa. \
+--allow-zone-overlap \
+-r KRAKEN.KCELL.KZ \
+-n kraken.kcell.kz \
+-p Aa123456 \
+-U \
+-a Aa123456 \
+--ip-address=192.168.0.150 \
+--dirsrv-cert-file=kdc01.p12 \
+--dirsrv-pin="hjgh&%^IGYJHph#$%Dv" \
+--http-cert-file=kdc01.p12 \ 
+--http-pin="hjgh&%^IGYJHph#$%Dv" \
+--ca-cert-file=kcell_root_ca.crt \
+--no-pkinit
+
+ipa-server-install --setup-dns --no-ntp --forwarder=192.168.0.1 --forwarder=8.8.8.8 --auto-reverse --reverse-zone=0.168.192.in-addr.arpa. --allow-zone-overlap -r KRAKEN.KCELL.KZ -n kraken.kcell.kz -p Aa123456 -U -a Aa123456 --ip-address=192.168.0.150 --dirsrv-cert-file=kdc01.p12 --dirsrv-pin="hjgh&%^IGYJHph#$%Dv" --http-cert-file=kdc01.p12 --http-pin="hjgh&%^IGYJHph#$%Dv" --ca-cert-file=kcell_root_ca.crt --no-pkinit
+
+
+```
+
+
 #### Создание DNS зоны (если её нет) и конфигурация DNS сервера. Опция требует указания как минимум одного DNS forwarder через --forwarder Или указание их отсутсвия опцией --no-forwarders Создаёт DNS зону через опцию --domain и заполнит её служебными записями для работы IPA деплоя. DNS можно установить после установке сервера, с помощью ipa-dns-install
 ```
 --setup-dns
