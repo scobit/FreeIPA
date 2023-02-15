@@ -100,3 +100,15 @@ https://www.freeipa.org/page/V3/CA-less_install
 --no-pkinit
 ```
 
+
+## Опции для удаления
+
+#### Удаление сервера
+```
+--uninstall
+```
+#### Удаление без запросов пользователю
+```
+-U 
+--unattended
+```
